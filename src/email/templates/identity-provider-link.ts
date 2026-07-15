@@ -1,21 +1,19 @@
 import type { GetSubject, GetTemplate } from "keycloakify-emails";
 import { createVariablesHelper } from "keycloakify-emails/variables";
 import { render } from "../render";
-import ActionEmail from "../../lib/emails/action-email.svelte";
+import IdentityProviderLink from "../../lib/emails/identity-provider-link.svelte";
 
 const { exp } = createVariablesHelper("identity-provider-link.ftl");
 
 export const getTemplate: GetTemplate = async (props) => {
-  return render({
-    template: ActionEmail,
+  return await render({
+    template: IdentityProviderLink,
     props: {
       locale: props.locale,
       realmName: exp("realmName"),
-      title: "Link Identity Provider",
-      bodyHtml:
-        '${kcSanitize(msg("identityProviderLinkBodyHtml", identityProviderDisplayName, realmName, identityProviderContext.username, link, linkExpiration, linkExpirationFormatter(linkExpiration)))?no_esc}',
       link: exp("link"),
-      buttonText: "Link Account",
+      identityProviderDisplayName: exp("identityProviderDisplayName"),
+      identityProviderUsername: exp("identityProviderContext.username"),
     },
     options: {
       plainText: props.plainText,

@@ -22,6 +22,18 @@ Say goodbye to PatternFly struggles, raw Freemarker email template syntax errors
 
 ---
 
+## Screenshots & Component Gallery
+
+<p align="center">
+    <img src="screenshots/login-1.png" alt="Login Flow 1" width="48%" />
+    <img src="screenshots/login-3.png" alt="Login Flow 2" width="48%" />
+</p>
+<p align="center">
+    <img src="screenshots/email-notification.png" alt="Transactional Email Theme" width="75%" />
+</p>
+
+---
+
 ## Quick Start
 
 ```bash

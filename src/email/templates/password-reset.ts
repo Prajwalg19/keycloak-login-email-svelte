@@ -1,21 +1,17 @@
 import type { GetSubject, GetTemplate } from "keycloakify-emails";
 import { createVariablesHelper } from "keycloakify-emails/variables";
 import { render } from "../render";
-import ActionEmail from "../../lib/emails/action-email.svelte";
+import PasswordReset from "../../lib/emails/password-reset.svelte";
 
 const { exp } = createVariablesHelper("password-reset.ftl");
 
 export const getTemplate: GetTemplate = async (props) => {
-  return render({
-    template: ActionEmail,
+  return await render({
+    template: PasswordReset,
     props: {
       locale: props.locale,
       realmName: exp("realmName"),
-      title: "Password Reset Request",
-      bodyHtml:
-        '${kcSanitize(msg("passwordResetBodyHtml",link, linkExpiration, realmName, linkExpirationFormatter(linkExpiration)))?no_esc}',
       link: exp("link"),
-      buttonText: "Reset Password",
     },
     options: {
       plainText: props.plainText,
