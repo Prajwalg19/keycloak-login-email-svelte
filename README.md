@@ -4,6 +4,8 @@
     <i><b>Svelte + Vite Keycloakify Starter</b> with Shadcn UI & Better Svelte Email</i>
     <br/>
     <br/>
+    <img src="screenshots/login-2.png" alt="Keycloak Svelte Login & Email Theme Cover" width="850" />
+    <br/>
 </p>
 
 This repository is a comprehensive, production-ready starter for building custom **Keycloak Login** and **Email** themes using **Svelte 5**, **Vite**, **Shadcn UI**, and **Better Svelte Email**.
