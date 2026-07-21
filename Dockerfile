@@ -23,7 +23,7 @@ WORKDIR /build
 
 # Install deps first so they cache across source changes.
 COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
-RUN apk add --no-cache openjdk17-jre-headless maven && \
+RUN apk add --no-cache openjdk17-jre-headless maven curl && \
     (npm ci --ignore-scripts || npm install --ignore-scripts)
 
 # Source + build. keycloakify emits build_dist_keycloak/*.jar.
@@ -33,13 +33,20 @@ RUN npm run postinstall && npm run build-keycloak-theme
 # The keycloakify build emits JARs under build_dist_keycloak/. We want the one
 # Keycloak >= 22 can consume (the *-keycloak-22.jar / *-keycloak-all-other-versions.jar
 # suffix depends on keycloakify version; pick the newest).
-RUN mkdir -p /out && \
+ARG WEBHOOK_VERSION=0.10.0-rc.1
+RUN mkdir -p /out/plugins && \
+    curl -sL -o /out/plugins/keycloak-webhook-provider-core.jar https://github.com/vymalo/keycloak-webhook/releases/download/v${WEBHOOK_VERSION}/keycloak-webhook-provider-core-${WEBHOOK_VERSION}-all.jar && \
+    curl -sL -o /out/plugins/keycloak-webhook-provider-amqp.jar https://github.com/vymalo/keycloak-webhook/releases/download/v${WEBHOOK_VERSION}/keycloak-webhook-provider-amqp-${WEBHOOK_VERSION}-all.jar && \
+    curl -sL -o /out/plugins/keycloak-webhook-provider-http.jar https://github.com/vymalo/keycloak-webhook/releases/download/v${WEBHOOK_VERSION}/keycloak-webhook-provider-http-${WEBHOOK_VERSION}-all.jar && \
+    curl -sL -o /out/plugins/keycloak-webhook-provider-syslog.jar https://github.com/vymalo/keycloak-webhook/releases/download/v${WEBHOOK_VERSION}/keycloak-webhook-provider-syslog-${WEBHOOK_VERSION}-all.jar && \
     cp $(ls -t build_dist_keycloak/*.jar | head -n 1) /out/acme-theme.jar
 
 # ---- Stage 2: Keycloak image with theme ----------------------------------
 FROM quay.io/keycloak/keycloak:${KEYCLOAK_VERSION} AS keycloak
 
 COPY --from=theme-builder /out/acme-theme.jar /opt/keycloak/providers/
+# Copy the webhook plugin JARs
+COPY --from=theme-builder /out/plugins/*.jar /opt/keycloak/providers/
 
 # Bake the cache-cluster Infinispan config the drumbeat-managed cluster
 # needs at build time. Required because:

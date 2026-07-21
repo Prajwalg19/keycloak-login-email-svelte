@@ -1,11 +1,11 @@
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:26.4.0
+    image: quay.io/keycloak/keycloak:26.6.1
     ports:
-      - "9100:9100"
+      - "8080:8080"
     environment:
       # HTTP Provider Configuration
-      WEBHOOK_HTTP_BASE_PATH: "http://prism:4010"
+      WEBHOOK_HTTP_BASE_PATH: "https://api.hopbox.net"
       WEBHOOK_HTTP_AUTH_USERNAME: "admin"
       WEBHOOK_HTTP_AUTH_PASSWORD: "password"
       # AMQP Provider Configuration
@@ -28,7 +28,7 @@ services:
       # Keycloak Admin Credentials
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: password
-      KC_HTTP_PORT: 9100
+      KC_HTTP_PORT: 8080
       KC_METRICS_ENABLED: "true"
       KC_LOG_CONSOLE_COLOR: "true"
       KC_HEALTH_ENABLED: "true"
@@ -39,7 +39,10 @@ services:
         set -ex
         # Copy all plugin JARs from the mounted volume into Keycloak's providers folder
         cp /tmp/plugins/*.jar /opt/keycloak/providers
-        /opt/keycloak/bin/kc.sh start-dev --import-realm
+        # Match features enabled in the Dockerfile
+        /opt/keycloak/bin/kc.sh build --features=organization
+        # Start Keycloak matching the Dockerfile flags
+        /opt/keycloak/bin/kc.sh start-dev --import-realm --http-relative-path=/auth
     volumes:
       - ./plugins:/tmp/plugins:ro # Place your downloaded JARs in this folder
       - ./.docker/keycloak-config/:/opt/keycloak/data/import/:ro
