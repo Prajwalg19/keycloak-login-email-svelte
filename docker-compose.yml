@@ -1,0 +1,45 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.0
+    ports:
+      - "9100:9100"
+    environment:
+      # HTTP Provider Configuration
+      WEBHOOK_HTTP_BASE_PATH: "http://prism:4010"
+      WEBHOOK_HTTP_AUTH_USERNAME: "admin"
+      WEBHOOK_HTTP_AUTH_PASSWORD: "password"
+      # AMQP Provider Configuration
+      WEBHOOK_AMQP_HOST: rabbitmq
+      WEBHOOK_AMQP_USERNAME: username
+      WEBHOOK_AMQP_PASSWORD: password
+      WEBHOOK_AMQP_PORT: 5672
+      WEBHOOK_AMQP_VHOST: "/"
+      WEBHOOK_AMQP_EXCHANGE: keycloak
+      WEBHOOK_AMQP_SSL: "no"
+      # Syslog Provider Configuration
+      WEBHOOK_SYSLOG_PROTOCOL: udp
+      WEBHOOK_SYSLOG_HOSTNAME: keycloak
+      WEBHOOK_SYSLOG_APP_NAME: Keycloak
+      WEBHOOK_SYSLOG_FACILITY: USER
+      WEBHOOK_SYSLOG_SEVERITY: INFORMATIONAL
+      WEBHOOK_SYSLOG_SERVER_HOSTNAME: syslog-ng
+      WEBHOOK_SYSLOG_SERVER_PORT: 5514
+      WEBHOOK_SYSLOG_MESSAGE_FORMAT: RFC_5425
+      # Keycloak Admin Credentials
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+      KC_HTTP_PORT: 9100
+      KC_METRICS_ENABLED: "true"
+      KC_LOG_CONSOLE_COLOR: "true"
+      KC_HEALTH_ENABLED: "true"
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        set -ex
+        # Copy all plugin JARs from the mounted volume into Keycloak's providers folder
+        cp /tmp/plugins/*.jar /opt/keycloak/providers
+        /opt/keycloak/bin/kc.sh start-dev --import-realm
+    volumes:
+      - ./plugins:/tmp/plugins:ro # Place your downloaded JARs in this folder
+      - ./.docker/keycloak-config/:/opt/keycloak/data/import/:ro
